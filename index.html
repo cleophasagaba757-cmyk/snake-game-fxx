@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f1a">
+  <title>Snake 50 – Classic Snake Game</title>
+  <meta name="description" content="A polished 50-level Snake game. Eat 10 food balls per level, race through increasing speed and conquer all 50 levels. Plays offline.">
+
+  <!-- Progressive Web App (all paths are relative so GitHub Pages sub-directories work) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Snake 50">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- iOS launch (splash) screens -->
+  <link rel="apple-touch-startup-image" href="splash/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/splash-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+  <link rel="apple-touch-startup-image" href="splash/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="hud">
+      <div class="stat">
+        <span class="stat-label">Score</span>
+        <span class="stat-value" id="score">0</span>
+      </div>
+      <div class="stat stat-level">
+        <span class="stat-label">Level</span>
+        <span class="stat-value"><span id="level">1</span><small>/50</small></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Best</span>
+        <span class="stat-value" id="high">0</span>
+      </div>
+    </header>
+
+    <section class="progress" aria-label="Level progress">
+      <div class="progress-text">
+        <span>Food this level: <strong id="levelFood">0/10</strong></span>
+        <span id="remaining">10 to go</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </section>
+
+    <section class="board-wrap" id="boardWrap">
+      <canvas id="board" aria-label="Snake playing area"></canvas>
+
+      <div class="toast" id="toast" aria-live="polite"></div>
+
+      <div class="overlay" id="overlay">
+        <div class="overlay-card" id="overlayCard">
+          <h2 id="overlayTitle">SNAKE</h2>
+          <p id="overlaySub">Press an arrow key or a direction button to start</p>
+          <ul class="overlay-stats" id="overlayStats"></ul>
+          <button class="btn-primary" id="overlayBtn" type="button">START</button>
+        </div>
+      </div>
+
+      <div class="confetti" id="confetti" aria-hidden="true"></div>
+    </section>
+
+    <section class="pad-area">
+      <div class="dpad" id="dpad">
+        <button class="pad-btn up" data-dir="up" type="button" aria-label="Up">
+          <svg viewBox="0 0 24 24"><path d="M12 6 L20 17 H4 Z"/></svg>
+        </button>
+        <button class="pad-btn left" data-dir="left" type="button" aria-label="Left">
+          <svg viewBox="0 0 24 24"><path d="M6 12 L17 4 V20 Z"/></svg>
+        </button>
+        <button class="pad-btn right" data-dir="right" type="button" aria-label="Right">
+          <svg viewBox="0 0 24 24"><path d="M18 12 L7 4 V20 Z"/></svg>
+        </button>
+        <button class="pad-btn down" data-dir="down" type="button" aria-label="Down">
+          <svg viewBox="0 0 24 24"><path d="M12 18 L4 7 H20 Z"/></svg>
+        </button>
+        <button class="pad-btn center" id="centerBtn" type="button" aria-label="Pause or resume">
+          <svg class="icon-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+          <svg class="icon-play" viewBox="0 0 24 24"><path d="M8 5 L19 12 L8 19 Z"/></svg>
+        </button>
+      </div>
+
+      <div class="options">
+        <button class="chip" id="soundBtn" type="button" aria-pressed="true">Sound: ON</button>
+        <button class="chip" id="vibrateBtn" type="button" aria-pressed="true">Vibration: ON</button>
+        <button class="chip chip-install" id="installBtn" type="button" hidden>Install App</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="help-backdrop" id="installHelp" role="dialog" aria-modal="true" aria-labelledby="installHelpTitle" hidden>
+    <div class="help-card">
+      <h3 id="installHelpTitle">Install Snake 50</h3>
+      <p id="installHelpText"></p>
+      <button class="btn-primary" id="installHelpClose" type="button">GOT IT</button>
+    </div>
+  </div>
+
+  <div class="pwa-toast" id="pwaToast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+  <script src="pwa.js"></script>
+</body>
+</html>
